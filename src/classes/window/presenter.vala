@@ -57,6 +57,8 @@ namespace pdfpc.Window {
          */
         protected View.Base next_view;
 
+        protected View.Base next_view2;
+
         /**
          * Small views for (non-user) next slides
          */
@@ -180,6 +182,16 @@ namespace pdfpc.Window {
                 this.presentation_controller,
                 out next_scale_rect
             );
+            this.next_view2 = new View.Pdf.from_metadata(
+                metadata,
+                next_allocated_width,
+                (int) Math.floor(0.7 * bottom_position),
+                Metadata.Area.CONTENT,
+                true,
+                false,
+                this.presentation_controller,
+                out next_scale_rect
+            );
 
             this.strict_next_view = new View.Pdf.from_metadata(
                 metadata,
@@ -268,6 +280,8 @@ namespace pdfpc.Window {
                     Renderer.Cache.create(metadata);
                 ((Renderer.Caching) this.next_view.get_renderer()).cache =
                     Renderer.Cache.create(metadata);
+                ((Renderer.Caching) this.next_view2.get_renderer()).cache =
+                    Renderer.Cache.create(metadata);
                 ((Renderer.Caching) this.strict_next_view.get_renderer()).cache =
                     Renderer.Cache.create(metadata);
                 ((Renderer.Caching)this.strict_prev_view.get_renderer()).cache =
@@ -329,10 +343,13 @@ namespace pdfpc.Window {
             this.next_view.halign = Gtk.Align.CENTER;
             this.next_view.valign = Gtk.Align.CENTER;
             nextViewWithNotes.pack_start(next_view, false, false, 0);
-            var notes_sw = new Gtk.ScrolledWindow(null, null);
-            notes_sw.add(this.notes_view);
-            notes_sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-            nextViewWithNotes.pack_start(notes_sw, true, true, 5);
+            //var notes_sw = new Gtk.ScrolledWindow(null, null);
+            //notes_sw.add(this.notes_view);
+            //notes_sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
+            //nextViewWithNotes.pack_start(notes_sw, true, true, 5);
+            this.next_view2.halign = Gtk.Align.CENTER;
+            this.next_view2.valign = Gtk.Align.CENTER;
+            nextViewWithNotes.pack_start(next_view2, false, false, 0);
             slide_views.pack_start(nextViewWithNotes, true, true, 0);
 
             this.overview.halign = Gtk.Align.CENTER;
@@ -390,6 +407,8 @@ namespace pdfpc.Window {
             try {
                 this.current_view.display(current_slide_number);
                 this.next_view.display(this.metadata.user_slide_to_real_slide(
+                    current_user_slide_number));
+                this.next_view2.display(this.metadata.user_slide_to_real_slide(
                     current_user_slide_number + 1));
                 if (this.presentation_controller.skip_next()) {
                     this.strict_next_view.display(current_slide_number + 1, true);
@@ -428,7 +447,8 @@ namespace pdfpc.Window {
         public void goto_page(int page_number) {
             try {
                 this.current_view.display(page_number);
-                this.next_view.display(page_number + 1);
+                this.next_view.display(page_number);
+                this.next_view2.display(page_number + 1);
             } catch( Renderer.RenderError e ) {
                 error("The pdf page %d could not be rendered: %s", page_number, e.message);
             }
